@@ -76,3 +76,4 @@ crashlytics-build.properties
 
 ProjectSettings/Packages/com.unity*/Settings.json
 
+.vsconfig
