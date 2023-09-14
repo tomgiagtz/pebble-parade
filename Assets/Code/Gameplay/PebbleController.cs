@@ -19,7 +19,7 @@ public class PebbleController : MonoBehaviour {
     public float jumpHeight = 6f;
     private float timeToApex = 0.5f;
     private float gravity = -50f;
-    private float fastFallGravity = -50f;
+    private float fastFallGravity = -100f;
     private const float DEFAULT_GRAVITY = -50f;
     private float v0 = 0f;
 
@@ -100,7 +100,7 @@ public class PebbleController : MonoBehaviour {
 
     private void OnReleaseJump(InputAction.CallbackContext context) {
         if (isGrounded && !(rb.velocity.y > 0)) return;
-        
+
         gravity = fastFallGravity;
     }
 
