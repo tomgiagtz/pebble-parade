@@ -155,7 +155,7 @@ public class PebbleController : MonoBehaviour {
         Debug.Log("colliding with " + contacts.Count + " points");
         float maxSlopeAngle = 60f;
         float maxSlopeCos = Mathf.Cos(maxSlopeAngle * Mathf.Deg2Rad);
-        contactPoints = contacts.Where().Select(_point => transform.InverseTransformPoint(_point.point)).ToList();
+        contactPoints = contacts.Select(_point => transform.InverseTransformPoint(_point.point)).ToList();
     }
 }
 
