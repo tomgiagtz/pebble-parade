@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Tweens;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -77,7 +78,7 @@ public class PebbleController : MonoBehaviour {
         UpdateJumpValues();
         maxSlopeCos = Mathf.Cos(maxSlopeAngle * Mathf.Deg2Rad);
     }
-    
+
     Vector3 cameraBasedInput = Vector3.zero;
 
     private void FixedUpdate() {
@@ -106,9 +107,9 @@ public class PebbleController : MonoBehaviour {
 
         Vector3 torqueVector = cameraRotation * torqueInput;
 
-        
+
         rb.AddTorque(torqueVector * torqueStrength, ForceMode.Force);
-        
+
         //calc strafe forces
         Vector3 strafeInput = new Vector3(moveInput.x, 0, moveInput.y).normalized;
         cameraBasedInput = cameraRotation * (strafeInput);
@@ -116,7 +117,7 @@ public class PebbleController : MonoBehaviour {
         cameraBasedInput.Normalize();
         //strafe forces
         if (!isGrounded) {
-            rb.AddForce(cameraBasedInput * strafeStrength, ForceMode.Acceleration);
+            rb.AddForce(cameraBasedInput * strafeMovementStrength, ForceMode.Acceleration);
         }
         // Debug.Log("move mag: " + rb.velocity.magnitude);
     }
@@ -133,8 +134,32 @@ public class PebbleController : MonoBehaviour {
         if (isGrounded) {
             isJumping = true;
             timeSinceJump = 0f;
+            StartStrafeTween();
             rb.AddForce(Vector3.up * v0 * rb.mass, ForceMode.Impulse);
         }
+    }
+
+    private float strafeMovementStrength = 1f;
+
+    [Tooltip("Starts on jump, ends at end of flat ground jump")]
+    public AnimationCurve strafeCurve = AnimationCurve.Linear(0, 0, 1, 1);
+
+    public EaseType strafeEaseType = EaseType.ExpoOut;
+
+    private void StartStrafeTween() {
+        gameObject.CancelTweens();
+        strafeMovementStrength = 0;
+        FloatTween strafeTween = new FloatTween {
+            from = 0,
+            to = strafeStrength,
+            duration = 2 * timeToApex,
+            easeType = strafeEaseType,
+            onUpdate = (_, value) => {
+                strafeMovementStrength = value;
+                Debug.Log(value);
+            }
+        };
+        gameObject.AddTween(strafeTween);
     }
 
     private void OnReleaseJump(InputAction.CallbackContext _context) {
