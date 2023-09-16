@@ -25,9 +25,8 @@ public class PebbleController : MonoBehaviour {
     private float maxSlopeCos;
 
     [Header("Jump")]
-    public float groundedRadius = 2f;
-
     public float jumpHeight = 6f;
+
     private float timeToApex = 0.5f;
     private float gravity = -30f;
     private float fastFallGravity = -40f;
@@ -58,16 +57,26 @@ public class PebbleController : MonoBehaviour {
         jumpAction.Disable();
     }
 
+    private void OnValidate() {
+        maxSlopeCos = Mathf.Cos(maxSlopeAngle * Mathf.Deg2Rad);
+        UpdateJumpValues();
+    }
+
     private void Awake() {
         rb = GetComponent<Rigidbody>();
         jumpAction = new InputAction("JumpAction", binding: "<Keyboard>/space", interactions: "press(behavior=1)");
         jumpAction.AddBinding("<Gamepad>/buttonSouth");
-        maxSlopeCos = Mathf.Cos(maxSlopeAngle * Mathf.Deg2Rad);
 
         // Add performed callback
         jumpAction.started += OnJump;
         jumpAction.canceled += OnReleaseJump;
+
+        UpdateJumpValues();
+        maxSlopeCos = Mathf.Cos(maxSlopeAngle * Mathf.Deg2Rad);
     }
+
+    Vector3 transformedInput = Vector3.zero;
+    Vector3 strafeDirection = Vector3.zero;
 
     private void FixedUpdate() {
         CheckGrounded();
@@ -86,16 +95,23 @@ public class PebbleController : MonoBehaviour {
 
         rb.AddForce(Vector3.up * gravity, ForceMode.Acceleration);
 
-        Quaternion CameraRotation = Camera.main.transform.rotation;
+        Quaternion cameraRotation = Camera.main.transform.rotation;
         Vector3 torqueInput = new Vector3(moveInput.y, 0, -moveInput.x);
-        Vector3 torqueVector = CameraRotation * torqueInput;
+
+        Vector3 torqueVector = cameraRotation * torqueInput;
+
+        transformedInput = torqueVector;
         rb.AddTorque(torqueVector * torqueStrength, ForceMode.Force);
 
         //strafe forces
-        if (isGrounded) {
-            Vector3 movementInput = new Vector3(moveInput.x, 0, moveInput.y);
-            Vector3 movementVector = CameraRotation * movementInput;
-            rb.AddTorque(movementVector * strafeStrength, ForceMode.Force);
+        if (!isGrounded) {
+            Vector3 strafeInput = new Vector3(moveInput.x, 0, moveInput.y).normalized;
+
+            strafeDirection = cameraRotation * (strafeInput);
+            strafeDirection.y = 0;
+            strafeDirection.Normalize();
+
+            rb.AddForce(strafeDirection * strafeStrength, ForceMode.Acceleration);
         }
         // Debug.Log("move mag: " + rb.velocity.magnitude);
     }
@@ -109,12 +125,9 @@ public class PebbleController : MonoBehaviour {
     private bool isJumping = false;
 
     private void OnJump(InputAction.CallbackContext _context) {
-        Debug.Log("yump");
         if (isGrounded) {
             isJumping = true;
             timeSinceJump = 0f;
-            // rb.AddForce(Vector3.up * 100f, ForceMode.Impulse);
-            UpdateJumpValues();
             rb.AddForce(Vector3.up * v0 * rb.mass, ForceMode.Impulse);
         }
     }
@@ -138,20 +151,6 @@ public class PebbleController : MonoBehaviour {
         isGrounded = contactLocations.Count != 0;
     }
 
-    private void OnDrawGizmos() {
-        if (!debug.debugMode) return;
-        Gizmos.color = Color.red;
-        if (debug.showGroundedRadius) Gizmos.DrawSphere(transform.position, groundedRadius);
-
-        if (debug.showPrevContactPoint) {
-            contactLocations.ForEach(_point => Gizmos.DrawSphere(_point, 0.1f));
-        }
-
-        if (debug.debugMode && debug.showContactNormals) {
-            contactPoints.ForEach(_point => Gizmos.DrawLine(_point.point,
-                _point.point + _point.normal * 3f));
-        }
-    }
 
     private void UpdateJumpValues() {
         gravity = -2 * jumpHeight / (timeToApex * timeToApex);
@@ -188,13 +187,43 @@ public class PebbleController : MonoBehaviour {
         contactPoints.Clear();
         contactLocations.Clear();
     }
+
+    // DEBUG
+    private void OnDrawGizmos() {
+        if (!debug.debugMode) return;
+
+
+        if (debug.showPrevContactPoint) {
+            Gizmos.color = Color.red;
+            contactLocations.ForEach(_point => Gizmos.DrawSphere(_point, 0.1f));
+        }
+
+        Vector3 position = transform.position;
+
+        if (debug.showContactNormals) {
+            Gizmos.color = Color.red;
+            contactPoints.ForEach(_point => Gizmos.DrawLine(_point.point,
+                _point.point + _point.normal * 3f));
+        }
+
+        if (debug.showInputVector) {
+            Gizmos.color = Color.blue;
+            Gizmos.DrawLine(position, position + transformedInput * 3f);
+        }
+
+        if (debug.showStrafeForce) {
+            Gizmos.color = Color.blue;
+            Gizmos.DrawLine(position, position + strafeDirection * 3f);
+        }
+    }
 }
 
 
 [Serializable]
 public struct PebbleControllerDebug {
     public bool debugMode;
-    public bool showGroundedRadius;
     public bool showPrevContactPoint;
     public bool showContactNormals;
+    public bool showInputVector;
+    public bool showStrafeForce;
 }

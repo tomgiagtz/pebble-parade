@@ -15502,9 +15502,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveInput: {x: 0, y: 0}
   torqueStrength: 250
-  strafeStrength: 1000
+  strafeStrength: 5
   maxSlopeAngle: 45
-  groundedRadius: 1.5
   jumpHeight: 4
   jumpAction:
     m_Name: Jump
@@ -15517,9 +15516,10 @@ MonoBehaviour:
     m_Flags: 0
   debug:
     debugMode: 1
-    showGroundedRadius: 0
     showPrevContactPoint: 1
     showContactNormals: 1
+    showInputVector: 1
+    showStrafeForce: 1
 --- !u!54 &2137270374
 Rigidbody:
   m_ObjectHideFlags: 0
