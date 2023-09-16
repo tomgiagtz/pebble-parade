@@ -84,10 +84,12 @@ public class PebbleController : MonoBehaviour {
         // Debug.Log("move mag: " + rb.velocity.magnitude);
     }
 
-
-    public void OnMove(InputValue _inputVec) {
-        moveInput = _inputVec.Get<Vector2>();
+    public void OnMove(InputAction.CallbackContext context) {
+        moveInput = context.ReadValue<Vector2>();
     }
+    // public void OnMove(InputValue _inputVec) {
+    //     moveInput = _inputVec.Get<Vector2>();
+    // }
 
     float timeSinceJump = 0f;
     private bool isJumping = false;
