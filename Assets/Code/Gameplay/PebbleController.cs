@@ -70,8 +70,22 @@ public class PebbleController : MonoBehaviour {
     }
 
 
-    public void OnMove(InputValue inputVec) {
-        Vector2 vec = inputVec.Get<Vector2>();
+    // public void OnMove(InputValue inputVec) {
+    //     Vector2 vec = inputVec.Get<Vector2>();
+    //     if (vec.magnitude == 0) {
+    //         torqueInput = Vector3.zero;
+    //         return;
+    //     }
+
+    //     // Vector3 forceVec = new Vector3(vec.x, 0, vec.y);
+    //     // rb.AddForce(forceVec * 100, ForceMode.Acceleration);
+    //     torqueInput = new Vector3(vec.y, 0, -vec.x); // This will rotate the object around its Y-axis.
+
+    //     // torqueVector = Camera.main.transform.rotation * torque;
+    // }
+
+    public void OnMove(InputAction.CallbackContext context) {
+        Vector2 vec = context.ReadValue<Vector2>();
         if (vec.magnitude == 0) {
             torqueInput = Vector3.zero;
             return;
