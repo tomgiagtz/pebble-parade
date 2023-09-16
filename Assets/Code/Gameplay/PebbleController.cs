@@ -7,11 +7,10 @@ using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 
 public class PebbleController : MonoBehaviour {
-    public PebbleControllerDebug debug;
+    // Constants
+    private const float DEFAULT_GRAVITY = -30f;
+    private const int MAX_CONTACTS = 5;
 
-    [Header("Input")]
-    // public InputActionAsset inputActions;
-    public InputAction jumpAction;
 
     public Vector2 moveInput;
 
@@ -20,6 +19,11 @@ public class PebbleController : MonoBehaviour {
 
     public float strafeStrength = 5f;
 
+    [Range(0, 180)]
+    public float maxSlopeAngle = 20f;
+
+    private float maxSlopeCos;
+
     [Header("Jump")]
     public float groundedRadius = 2f;
 
@@ -27,12 +31,24 @@ public class PebbleController : MonoBehaviour {
     private float timeToApex = 0.5f;
     private float gravity = -30f;
     private float fastFallGravity = -40f;
-    private const float DEFAULT_GRAVITY = -30f;
     private float v0 = 0f;
 
 
     private bool isGrounded;
+
+    // collisions for grounded check
+    private List<Vector3> contactLocations = new List<Vector3>();
+    private List<ContactPoint> contactPoints = new List<ContactPoint>();
+
+    // components
+    [Header("Input")]
+    // public InputActionAsset inputActions;
+    public InputAction jumpAction;
+
     private Rigidbody rb;
+
+    [Space(10)]
+    public PebbleControllerDebug debug;
 
     private void OnEnable() {
         jumpAction.Enable();
@@ -46,7 +62,7 @@ public class PebbleController : MonoBehaviour {
         rb = GetComponent<Rigidbody>();
         jumpAction = new InputAction("JumpAction", binding: "<Keyboard>/space", interactions: "press(behavior=1)");
         jumpAction.AddBinding("<Gamepad>/buttonSouth");
-
+        maxSlopeCos = Mathf.Cos(maxSlopeAngle * Mathf.Deg2Rad);
 
         // Add performed callback
         jumpAction.started += OnJump;
@@ -118,24 +134,22 @@ public class PebbleController : MonoBehaviour {
 
         timeSinceJump = 0;
         isJumping = false;
-        // isGrounded = Physics.Raycast(prevContactPoint + Vector3.up * (0.5f * groundedRadius), Vector3.down,
-        //     groundedRadius);
 
-        foreach (Vector3 point in contactPoints) {
-            isGrounded = Physics.Raycast(point + transform.position, Vector3.down,
-                groundedRadius);
-            if (isGrounded) break;
-        }
-        // isGrounded = Physics.SphereCast(transform.position, groundedRadius,
-        //     Vector3.down, out RaycastHit hit, groundedRadius * 0.5f);
+        isGrounded = contactLocations.Count != 0;
     }
 
     private void OnDrawGizmos() {
+        if (!debug.debugMode) return;
         Gizmos.color = Color.red;
-        if (debug.debugMode && debug.showGroundedRadius) Gizmos.DrawSphere(transform.position, groundedRadius);
+        if (debug.showGroundedRadius) Gizmos.DrawSphere(transform.position, groundedRadius);
 
-        if (debug.debugMode && debug.showPrevContactPoint) {
-            contactPoints.ForEach(_point => Gizmos.DrawSphere(transform.TransformPoint(_point), 0.1f));
+        if (debug.showPrevContactPoint) {
+            contactLocations.ForEach(_point => Gizmos.DrawSphere(_point, 0.1f));
+        }
+
+        if (debug.debugMode && debug.showContactNormals) {
+            contactPoints.ForEach(_point => Gizmos.DrawLine(_point.point,
+                _point.point + _point.normal * 3f));
         }
     }
 
@@ -144,18 +158,35 @@ public class PebbleController : MonoBehaviour {
         v0 = 2.1f * jumpHeight / timeToApex;
     }
 
-    List<Vector3> contactPoints = new List<Vector3>();
 
-    public void OnCollisionStay(Collision _other) {
-        List<ContactPoint> contacts = new List<ContactPoint>();
-        contacts.Clear();
-        _other.GetContacts(contacts);
-        contacts.Capacity = 6;
+    private void OnCollisionStay(Collision _other) {
+        _other.GetContacts(contactPoints);
 
-        Debug.Log("colliding with " + contacts.Count + " points");
-        float maxSlopeAngle = 60f;
-        float maxSlopeCos = Mathf.Cos(maxSlopeAngle * Mathf.Deg2Rad);
-        contactPoints = contacts.Select(_point => transform.InverseTransformPoint(_point.point)).ToList();
+        //prevent too many collision points
+        if (contactPoints.Count > MAX_CONTACTS) {
+            contactPoints.RemoveRange(MAX_CONTACTS - 1, contactPoints.Count - MAX_CONTACTS);
+        }
+
+
+        // filter out points that are too steep
+        List<ContactPoint> upwardFacingPoints = contactPoints.Where(_point => {
+            float dot = Vector3.Dot(_point.normal.normalized, Vector3.up);
+            if (dot < maxSlopeCos) {
+                // Debug.Log("Angle too steep: " + dot + " vs " + maxSlopeCos);
+            }
+
+            return dot >= maxSlopeCos;
+        }).ToList();
+
+        // Debug.Log("Num valid points: " + upwardFacingPoints.Count);
+
+        contactPoints = upwardFacingPoints;
+        contactLocations = upwardFacingPoints.Select(_point => _point.point).ToList();
+    }
+
+    private void OnCollisionExit(Collision other) {
+        contactPoints.Clear();
+        contactLocations.Clear();
     }
 }
 
@@ -165,4 +196,5 @@ public struct PebbleControllerDebug {
     public bool debugMode;
     public bool showGroundedRadius;
     public bool showPrevContactPoint;
+    public bool showContactNormals;
 }
