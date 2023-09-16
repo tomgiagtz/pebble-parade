@@ -19,13 +19,16 @@ public class PebbleController : MonoBehaviour {
 
     public float strafeStrength = 5f;
 
-    [Range(0, 180)]
-    public float maxSlopeAngle = 20f;
 
     private float maxSlopeCos;
 
     [Header("Jump")]
     public float jumpHeight = 6f;
+
+    [Range(0, 180)]
+    public float maxSlopeAngle = 20f;
+
+    public float coyoteTime = 0.1f;
 
     private float timeToApex = 0.5f;
     private float gravity = -30f;
@@ -74,9 +77,8 @@ public class PebbleController : MonoBehaviour {
         UpdateJumpValues();
         maxSlopeCos = Mathf.Cos(maxSlopeAngle * Mathf.Deg2Rad);
     }
-
-    Vector3 transformedInput = Vector3.zero;
-    Vector3 strafeDirection = Vector3.zero;
+    
+    Vector3 cameraBasedInput = Vector3.zero;
 
     private void FixedUpdate() {
         CheckGrounded();
@@ -89,6 +91,10 @@ public class PebbleController : MonoBehaviour {
         }
 
         //gravity
+        if (!isGrounded) {
+            timeSinceGrounded += Time.deltaTime;
+        }
+
         if (isGrounded) {
             gravity = DEFAULT_GRAVITY;
         }
@@ -100,18 +106,17 @@ public class PebbleController : MonoBehaviour {
 
         Vector3 torqueVector = cameraRotation * torqueInput;
 
-        transformedInput = torqueVector;
+        
         rb.AddTorque(torqueVector * torqueStrength, ForceMode.Force);
-
+        
+        //calc strafe forces
+        Vector3 strafeInput = new Vector3(moveInput.x, 0, moveInput.y).normalized;
+        cameraBasedInput = cameraRotation * (strafeInput);
+        cameraBasedInput.y = 0;
+        cameraBasedInput.Normalize();
         //strafe forces
         if (!isGrounded) {
-            Vector3 strafeInput = new Vector3(moveInput.x, 0, moveInput.y).normalized;
-
-            strafeDirection = cameraRotation * (strafeInput);
-            strafeDirection.y = 0;
-            strafeDirection.Normalize();
-
-            rb.AddForce(strafeDirection * strafeStrength, ForceMode.Acceleration);
+            rb.AddForce(cameraBasedInput * strafeStrength, ForceMode.Acceleration);
         }
         // Debug.Log("move mag: " + rb.velocity.magnitude);
     }
@@ -138,6 +143,8 @@ public class PebbleController : MonoBehaviour {
         gravity = fastFallGravity;
     }
 
+    private float timeSinceGrounded = 0f;
+
     private void CheckGrounded() {
         // prevent early grounded checks just after jumping
         if (isJumping && timeSinceJump < 0.3f) {
@@ -145,10 +152,18 @@ public class PebbleController : MonoBehaviour {
             return;
         }
 
-        timeSinceJump = 0;
+        if (timeSinceGrounded < coyoteTime) {
+            isGrounded = true;
+            return;
+        }
+
+
         isJumping = false;
 
         isGrounded = contactLocations.Count != 0;
+        if (isGrounded) {
+            timeSinceGrounded = 0f;
+        }
     }
 
 
@@ -208,12 +223,7 @@ public class PebbleController : MonoBehaviour {
 
         if (debug.showInputVector) {
             Gizmos.color = Color.blue;
-            Gizmos.DrawLine(position, position + transformedInput * 3f);
-        }
-
-        if (debug.showStrafeForce) {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawLine(position, position + strafeDirection * 3f);
+            Gizmos.DrawLine(position, position + cameraBasedInput * 3f);
         }
     }
 }
@@ -225,5 +235,4 @@ public struct PebbleControllerDebug {
     public bool showPrevContactPoint;
     public bool showContactNormals;
     public bool showInputVector;
-    public bool showStrafeForce;
 }
