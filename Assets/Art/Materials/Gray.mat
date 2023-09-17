@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Red
+  m_Name: Gray
   m_Shader: {fileID: -6465566751694194690, guid: 2926e1b526a0331469fe05480b9e77fd, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -42,7 +42,7 @@ Material:
     - _QueueOffset: 0
     - _Smoothness: 0.5
     m_Colors:
-    - _BaseColor: {r: 1, g: 0.33490568, b: 0.33490568, a: 0}
+    - _BaseColor: {r: 0.3962264, g: 0.3962264, b: 0.3962264, a: 0}
     - _Emission: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
 --- !u!114 &6690327685500129140
