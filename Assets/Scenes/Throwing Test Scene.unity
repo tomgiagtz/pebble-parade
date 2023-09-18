@@ -5373,10 +5373,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 865676d22b35c4746a2840e99b2f46fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  debug:
-    debugMode: 0
-    showGroundedRadius: 0
-    showPrevContactPoint: 0
+  moveInput: {x: 0, y: 0}
+  torqueStrength: 250
+  strafeStrength: 5
+  jumpHeight: 4.5
+  timeToApex: 0.35
+  maxSlopeAngle: 20
+  coyoteTime: 0.1
+  strafeEaseType: 61
   jumpAction:
     m_Name: Jump
     m_Type: 0
@@ -5386,11 +5390,11 @@ MonoBehaviour:
     m_Interactions: 
     m_SingletonActionBindings: []
     m_Flags: 0
-  moveInput: {x: 0, y: 0}
-  torqueStrength: 250
-  strafeStrength: 5
-  groundedRadius: 1.5
-  jumpHeight: 4.5
+  debug:
+    debugMode: 0
+    showPrevContactPoint: 0
+    showContactNormals: 0
+    showInputVector: 0
 --- !u!33 &873765902
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -5431,7 +5435,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   playerOffset: 3
-  maxAimDistance: 10
+  maxAimDistance: 50
+  previewSubdivisions: 1
+  vertexHeight: 2
 --- !u!1 &885493846
 GameObject:
   m_ObjectHideFlags: 0

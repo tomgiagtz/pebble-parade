@@ -15,7 +15,10 @@ public class ThrowController : MonoBehaviour
     public float playerOffset = 2f;
     public float maxAimDistance = 30f;
 
-    
+    [Header("Aim Preview")]
+    public int previewSubdivisions = 2;
+    public float vertexHeight = 1f;
+
 
     bool isAiming;
     float projSize = 0.5f;
@@ -25,6 +28,8 @@ public class ThrowController : MonoBehaviour
     Vector3 aimNormalRotate1;
     Vector3 aimNormalRotate2;
     Vector3[] projPoints;
+
+    Vector3[] previewPoints;
 
     private void Update()
     {
@@ -38,6 +43,8 @@ public class ThrowController : MonoBehaviour
                 aimPoint = hit.point;
                 aimNormal = hit.normal;
             }
+
+            previewPoints = CalculatePreviewPoints(new List<Vector3>() { gameObject.transform.position, aimPoint }, previewSubdivisions).ToArray();
         }
     }
     private void FixedUpdate()
@@ -100,6 +107,36 @@ public class ThrowController : MonoBehaviour
         return -(normalAvg * (1f / avgCount));
     }
 
+    List<Vector3> CalculatePreviewPoints(List<Vector3> pointList, int remainingDivisions)
+    {
+        List<Vector3> dividedList = new List<Vector3>(pointList);
+        int addedPoints = 0;
+        for(int i = 0; i < pointList.Count - 1; i++)
+        {
+            dividedList.Insert(i + 1 + addedPoints, GetHalfwayVertex(pointList[i], pointList[i + 1], vertexHeight * Mathf.Pow(((float)remainingDivisions / (float)previewSubdivisions), 2)));
+            addedPoints++;
+        }
+
+        remainingDivisions--;
+        if(remainingDivisions > 0)
+        {
+            return CalculatePreviewPoints(dividedList, remainingDivisions);
+        }
+        return dividedList;
+    }
+
+    Vector3 GetHalfwayVertex(Vector3 start, Vector3 end, float vertexHeight)
+    {
+        float halfLength = Vector3.Distance(start, end) / 2;
+        Vector3 forwardDir = (end - start).normalized;
+        Vector3 upDir = Vector3.Cross(forwardDir, Camera.main.transform.right).normalized;
+
+        Vector3 halfwayPoint = start + (forwardDir * halfLength);
+
+        Vector3 halfwayVertex = halfwayPoint + (upDir * vertexHeight);
+        return halfwayVertex;
+    }
+
     public void OnThrow(InputAction.CallbackContext context)
     {
         if (!isAiming || !context.started) return;
@@ -121,13 +158,28 @@ public class ThrowController : MonoBehaviour
             Gizmos.DrawRay(aimPoint, aimNormalRotate2);
         }
 
-        if(projector.gameObject.activeSelf && projPoints != null)
+        /*if(projector.gameObject.activeSelf && projPoints != null)
         {
             Gizmos.color = Color.red;
             foreach (Vector3 point in projPoints)
             {
                 Gizmos.DrawSphere(point, 0.1f);
                 Gizmos.DrawRay(Camera.main.transform.position, (point - Camera.main.transform.position).normalized * 100f);
+            }
+        }*/
+
+        if(projector.gameObject.activeSelf && previewPoints != null)
+        {
+            Gizmos.color = Color.yellow;
+            foreach(Vector3 point in previewPoints)
+            {
+                Gizmos.DrawSphere(point, 0.2f);
+            }
+
+            Gizmos.color = Color.blue;
+            for(int i = 0; i < previewPoints.Length - 1; i++)
+            {
+                Gizmos.DrawLine(previewPoints[i], previewPoints[i + 1]);
             }
         }
     }
