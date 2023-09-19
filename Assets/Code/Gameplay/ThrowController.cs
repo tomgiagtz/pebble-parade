@@ -8,7 +8,8 @@ using UnityEngine.Rendering.Universal;
 public class ThrowController : MonoBehaviour
 {
     [Header("Aim Objects")]
-    public DecalProjector projector;
+    public DecalProjector aimProjection;
+    public LineRenderer previewLine;
 
     [Header("Aim Params")]
     public LayerMask hitLayer;
@@ -45,14 +46,16 @@ public class ThrowController : MonoBehaviour
             }
 
             previewPoints = CalculatePreviewPoints(new List<Vector3>() { gameObject.transform.position, aimPoint }, previewSubdivisions).ToArray();
+            previewLine.positionCount = previewPoints.Length;
+            previewLine.SetPositions(previewPoints);
         }
     }
     private void FixedUpdate()
     {
         if (isAiming)
         {
-            projector.transform.position = aimPoint;
-            projector.transform.forward = CalcAvgNormal();
+            aimProjection.transform.position = aimPoint;
+            aimProjection.transform.forward = CalcAvgNormal();
         }
     }
     public void OnToggleAim(InputAction.CallbackContext context)
@@ -64,13 +67,15 @@ public class ThrowController : MonoBehaviour
     void ToggleAimOn()
     {
         isAiming = true;
-        projector.gameObject.SetActive(true);
+        aimProjection.gameObject.SetActive(true);
+        previewLine.gameObject.SetActive(true);
         Debug.Log("Aiming On");
     }
     void ToggleAimOff()
     {
         isAiming = false;
-        projector.gameObject.SetActive(false);
+        aimProjection.gameObject.SetActive(false);
+        previewLine.gameObject.SetActive(false);
         Debug.Log("Aiming Off");
     }
 
@@ -113,7 +118,7 @@ public class ThrowController : MonoBehaviour
         int addedPoints = 0;
         for(int i = 0; i < pointList.Count - 1; i++)
         {
-            dividedList.Insert(i + 1 + addedPoints, GetHalfwayVertex(pointList[i], pointList[i + 1], vertexHeight * Mathf.Pow(((float)remainingDivisions / (float)previewSubdivisions), 2)));
+            dividedList.Insert(i + 1 + addedPoints, GetHalfwayVertex(pointList[i], pointList[i + 1], vertexHeight * Mathf.Pow(((float)remainingDivisions / (float)previewSubdivisions), previewSubdivisions)));
             addedPoints++;
         }
 
@@ -168,7 +173,7 @@ public class ThrowController : MonoBehaviour
             }
         }*/
 
-        if(projector.gameObject.activeSelf && previewPoints != null)
+        if(aimProjection.gameObject.activeSelf && previewPoints != null)
         {
             Gizmos.color = Color.yellow;
             foreach(Vector3 point in previewPoints)
