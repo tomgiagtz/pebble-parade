@@ -9,12 +9,8 @@ public class Collectable : MonoBehaviour {
     public UnityEvent onCollect;
 
     private void OnTriggerEnter(Collider other) {   
-        Debug.Log("collect!");
         if (other.gameObject.CompareTag("Player")) {
-            Destroy(gameObject);
             onCollect.Invoke();
         }
     }
-
-
 }

@@ -4,14 +4,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ParadeController : MonoBehaviour {
-    
+
     public Transform leader;
 
     private void Update() {
         transform.position = leader.position;
     }
-    
-    public void AddMember(Transform member) {
-        member.transform.parent = transform;
+
+    public void AddMember(GameObject member) {
+        if (!member.CompareTag("ParadeMember")) return;
+        
+        Debug.Log("Adding member");
+        ParadeMember newParadeMember = member.GetComponent<ParadeMember>();
+        newParadeMember.Init();
     }
 }
