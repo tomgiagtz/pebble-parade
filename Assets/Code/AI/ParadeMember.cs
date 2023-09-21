@@ -20,4 +20,6 @@ public class ParadeMember : MonoBehaviour {
         coll.isTrigger = false;
         rb.isKinematic = false;
     }
+    
+    
 }
