@@ -20,6 +20,8 @@ public class ThrowController : MonoBehaviour
     public int previewSubdivisions = 2;
     public float vertexHeight = 1f;
 
+    [Header("Accessibility")]
+    public float aimAssistThreshold = 0.5f;
 
     bool isAiming;
     float projSize = 0.5f;
@@ -44,6 +46,17 @@ public class ThrowController : MonoBehaviour
                 aimPoint = hit.point;
                 aimNormal = hit.normal;
             }
+
+            //IF AIM ASSIST ACTIVE USE AAPOINTS
+            if(SettingsUiManager.Instance.AimAssistEnabled)
+            {
+                Transform aaPoint = GetClosestAimAssistPoint(aimPoint);
+                if (aaPoint != null)
+                {
+                    aimPoint = aaPoint.position;
+                }
+            }
+
 
             previewPoints = CalculatePreviewPoints(new List<Vector3>() { gameObject.transform.position, aimPoint }, previewSubdivisions).ToArray();
             previewLine.positionCount = previewPoints.Length;
@@ -81,8 +94,6 @@ public class ThrowController : MonoBehaviour
 
     Vector3 CalcAvgNormal()
     {
-
-
         Camera cam = Camera.main;
         Vector3 normalVec = -cam.transform.forward;
         Vector3 rightVec = cam.transform.right;
@@ -140,6 +151,30 @@ public class ThrowController : MonoBehaviour
 
         Vector3 halfwayVertex = halfwayPoint + (upDir * vertexHeight);
         return halfwayVertex;
+    }
+
+    Transform GetClosestAimAssistPoint(Vector3 aimPoint)
+    {
+        GameObject[] aaPoints;
+        aaPoints = GameObject.FindGameObjectsWithTag("AimAssistPoint");
+
+        GameObject closest = null;
+        float minDist = Mathf.Infinity;
+        Vector3 pos = aimPoint;
+
+        foreach(GameObject go in aaPoints)
+        {
+            float goDist = Vector3.Distance(go.transform.position, pos);
+            if(goDist < minDist)
+            {
+                closest = go;
+                minDist = goDist;
+            }
+        }
+        if(minDist <= aimAssistThreshold)
+            return closest.transform;
+        else
+            return null;
     }
 
     public void OnThrow(InputAction.CallbackContext context)
