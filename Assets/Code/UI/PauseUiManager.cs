@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class PauseUiManager : UiManager
 {
@@ -20,6 +21,17 @@ public class PauseUiManager : UiManager
 
     [SerializeField]
     private Button continueButton, settingsButton, quitButton;
+
+    public InputAction pauseAction;
+
+	private void Awake()
+    {
+        this.pauseAction = new InputAction("PauseAction", binding: "<Keyboard>/escape", interactions: "press (behavior=1)");
+        this.pauseAction.AddBinding("<Gamepad>/startButton");
+
+        this.pauseAction.started += this.HandlePause;
+        this.pauseAction.Enable();
+    }
 
 	private new void Start()
 	{
@@ -47,22 +59,16 @@ public class PauseUiManager : UiManager
         base.SetActive(toggle);
     }
 
-	private void Update()
-	{
+    private void HandlePause(InputAction.CallbackContext _context)
+    {
+        Debug.Log("Attempting to handle pause");
         if (SceneLoader.Instance.IsLoading || TitleUiManager.Instance != null)
         {
+            Debug.Log("Cannot do pause");
             return;
         }
-
-        this.HandlePause();
-	}
-
-    private void HandlePause()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            this.SetActive(true);
-        }
+        bool flag = this.gameObject.activeSelf;
+        this.SetActive(!flag);
     }
 
 	private void Continue()

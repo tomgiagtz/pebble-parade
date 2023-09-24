@@ -66,8 +66,10 @@ public class SceneLoader : MonoBehaviour
 	{
 		Time.timeScale = 0f;
 		this.isLoading = true;
-		// DO START TRANSITION
+		LoadingUIManager.Instance.PlayAnimation("In");
+		StartCoroutine(LoadingUIManager.Instance.DoLoadText());
 		yield return AdvancedUtil.WaitForRealSeconds(3.33333f);
+		PauseUiManager.Instance.SetActive(false);
 		this.asyncLoad = SceneManager.LoadSceneAsync(scene);
 		this.asyncLoad.allowSceneActivation = false;
 
@@ -91,7 +93,7 @@ public class SceneLoader : MonoBehaviour
 		}
 		yield return AdvancedUtil.WaitForRealSeconds(1f);
 		Time.timeScale = 1f;
-		// DO END TRANSITION
+		LoadingUIManager.Instance.PlayAnimation("Out");
 		yield return AdvancedUtil.WaitForRealSeconds(1f);
 		yield return AdvancedUtil.WaitForRealSeconds(0.05f);
 		this.isLoading = false;

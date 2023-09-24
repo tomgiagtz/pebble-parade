@@ -21,6 +21,17 @@ public class TitleUiManager : UiManager
     [SerializeField]
     private Button startButton, settingsButton, exitButton;
 
+    [SerializeField]
+    private GameObject globalManagerPrefab;
+
+	private void Awake()
+	{
+        if (GlobalManager.Instance == null)
+        {
+            Instantiate(this.globalManagerPrefab);
+        }
+	}
+
 	private new void Start()
 	{
         this.startButton.onClick.AddListener(() =>
@@ -42,9 +53,9 @@ public class TitleUiManager : UiManager
     private void StartGame()
     {
         SceneLoader.Instance.LoadScene(1);
-        this.startButton.enabled = false;
-        this.settingsButton.enabled = false;
-        this.exitButton.enabled = false;
+        this.startButton.interactable = false;
+        this.settingsButton.interactable = false;
+        this.exitButton.interactable = false;
     }
 
     private void OpenSettings()
