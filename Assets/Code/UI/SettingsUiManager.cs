@@ -1,10 +1,11 @@
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.UI;
-
+using TMPro;
 public class SettingsUiManager : UiManager
 {
     private static SettingsUiManager _Instance;
@@ -76,139 +77,173 @@ public class SettingsUiManager : UiManager
         }
     }
 
-    public Toggle descriptionsToggle, highContrastToggle, aimAssistToggle, ttsToggle;
+    private bool ttsEnabled = false;
 
-    public Dropdown resolutionDropdown, qualityDropdown, textureDropdown, aaDropdown;
+    public bool TtsEnabled
+    {
+        get
+        {
+            return this.ttsEnabled;
+        } set
+        {
+            this.ttsEnabled = value;
+        }
+    }
+
+    public SettingsUiManager.Toggle descriptionsToggle, highContrastToggle, aimAssistToggle, ttsToggle;
+
+    public TMP_Dropdown resolutionDropdown, fullscreenDropdown, qualityDropdown, textureDropdown, aaDropdown;
 
     public Button exitButton;
 
-    private Resolution[] resolutions;
+    public List<Resolution> resolutions;
+    
+    [System.Serializable]
+    public class Toggle
+    {
+        public UnityEngine.UI.Toggle toggle;
+
+        public TextMeshProUGUI on, off;
+
+        public Image onImage, offImage;
+
+        public void ToggleSwap(bool toggle)
+        {
+            this.on.color = ((toggle) ? SettingsUiManager.Instance.textOnColor : SettingsUiManager.Instance.textOffColor);
+            this.off.color = ((!toggle) ? SettingsUiManager.Instance.textOnColor : SettingsUiManager.Instance.textOffColor);
+            this.onImage.color = ((toggle) ? SettingsUiManager.Instance.buttonOnColor : SettingsUiManager.Instance.buttonOffColor);
+            this.offImage.color = ((!toggle) ? SettingsUiManager.Instance.buttonOnColor : SettingsUiManager.Instance.buttonOffColor);
+        }
+    }
+
+    [SerializeField]
+    private Color32 buttonOnColor, buttonOffColor, textOnColor, textOffColor;
 
 	private new void Start()
 	{
         this.resolutionDropdown.ClearOptions();
         List<string> options = new List<string>();
-        resolutions = Screen.resolutions;
+        
+        var resolutions = Screen.resolutions.Select(resolution => new Resolution { width = resolution.width, height = resolution.height }).Distinct();
+
+        this.resolutions = resolutions.ToList();
+
         int currentResolutionIndex = 0;
 
-        for (int i = 0; i < resolutions.Length; i++)
-        {
-            string option = resolutions[i].width + " x " + resolutions[i].height;
-            options.Add(option);
-            if (resolutions[i].width == Screen.currentResolution.width && resolutions[i].height == Screen.currentResolution.height)
-            {
-                currentResolutionIndex = i;
-            }
-        }
+        for (int i = 0; i < this.resolutions.Count; i++) {
+            string option = this.resolutions[i].width + " x " + this.resolutions[i].height;
+         options.Add(option);
+     }
+
+
+        currentResolutionIndex = (int)options.Count - 1;
 
         this.resolutionDropdown.AddOptions(options);
         this.resolutionDropdown.RefreshShownValue();
         this.LoadSettings(currentResolutionIndex);
+
+        base.SetActive(false);
 	}
+
+    public void ToggleDescriptions(bool toggle)
+    {
+        this.descriptionsEnabled = toggle;
+        this.descriptionsToggle.ToggleSwap(toggle);
+    }
+
+    public void ToggleHighContrast(bool toggle)
+    {
+        this.highContrastEnabled = toggle;
+        this.highContrastToggle.ToggleSwap(toggle);
+    }
+
+    public void ToggleAimAssist(bool toggle)
+    {
+        this.AimAssistEnabled = toggle;
+        this.aimAssistToggle.ToggleSwap(toggle);
+    }
+
+    public void ToggleTextToSpeech(bool toggle)
+    {
+        this.ttsEnabled = toggle;
+        this.ttsToggle.ToggleSwap(toggle);
+    }
 
     public void SetVolume(float volume)
     {
 
     }
 
-    public void SetFullscreen(bool isFullscreen)
+    public void SetFullscreen(int isFullscreen)
     {
-        Screen.fullScreen = isFullscreen;
+        Screen.fullScreen = (isFullscreen == 0) ? true : false;
     }
 
     public void SetResolution(int resolutionIndex)
     {
-        Resolution resolution = resolutions[resolutionIndex];
+        Resolution resolution = this.resolutions[resolutionIndex];
         Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreen);
     }
 
     public void SetQuality(int qualityIndex)
     {
-        if (qualityIndex != 6)
-        {
-            QualitySettings.SetQualityLevel(qualityIndex);
-        }
-
-        switch (qualityIndex)
-        {
-            case 0: // quality level - very low
-                textureDropdown.value = 3;
-                aaDropdown.value = 0;
-                break;
-            case 1: // quality level - low
-                textureDropdown.value = 2;
-                aaDropdown.value = 0;
-                break;
-            case 2: // quality level - medium
-                textureDropdown.value = 1;
-                aaDropdown.value = 0;
-                break;
-            case 3: // quality level - high
-                textureDropdown.value = 0;
-                aaDropdown.value = 0;
-                break;
-            case 4: // quality level - very high
-                textureDropdown.value = 0;
-                aaDropdown.value = 1;
-                break;
-            case 5: // quality level - ultra
-                textureDropdown.value = 0;
-                aaDropdown.value = 2;
-                break;
-        }
-
+        QualitySettings.SetQualityLevel(qualityIndex);
         qualityDropdown.value = qualityIndex;
     }
 
     public void SaveSettings()
     {
         PlayerPrefs.SetInt("DescripionsToggle",
-            Convert.ToInt32(this.descriptionsToggle.isOn));
+            Convert.ToInt32(this.descriptionsToggle.toggle.isOn));
         PlayerPrefs.SetInt("HighContrastToggle",
-            Convert.ToInt32(this.highContrastToggle.isOn));
+            Convert.ToInt32(this.highContrastToggle.toggle.isOn));
     //    PlayerPrefs.SetInt("HighContrastMode",
     //        Convert.ToInt32(this.highContrastMode.));
         PlayerPrefs.SetInt("AimAsisstToggle",
-            Convert.ToInt32(this.aimAssistToggle.isOn));
+            Convert.ToInt32(this.aimAssistToggle.toggle.isOn));
         PlayerPrefs.SetInt("TtsToggle",
-            Convert.ToInt32(this.ttsToggle.isOn));
+            Convert.ToInt32(this.ttsToggle.toggle.isOn));
 
         PlayerPrefs.SetInt("QualitySettingPreference",
             qualityDropdown.value);
         PlayerPrefs.SetInt("ResolutionPreference",
             resolutionDropdown.value);
-        PlayerPrefs.SetInt("TextureQualityPreference",
-            textureDropdown.value);
-        PlayerPrefs.SetInt("AntiAliasingPreference",
-            aaDropdown.value);
         PlayerPrefs.SetInt("FullscreenPreference",
             Convert.ToInt32(Screen.fullScreen));
     }
 
     public void LoadSettings(int currentResolutionIndex)
     {
-        this.descriptionsToggle.isOn = ((PlayerPrefs.HasKey("DescriptionsToggle")) ? Convert.ToBoolean(PlayerPrefs.GetInt("DescriptionsToggle")) : false);
-        this.highContrastToggle.isOn = ((PlayerPrefs.HasKey("HighContrastToggle")) ? Convert.ToBoolean(PlayerPrefs.GetInt("HighContrastToggle")) : false);
-        this.aimAssistToggle.isOn = ((PlayerPrefs.HasKey("AimAsisstToggle")) ? Convert.ToBoolean(PlayerPrefs.GetInt("AimAsisstToggle")) : false);
-        this.ttsToggle.isOn = ((PlayerPrefs.HasKey("TtsToggle")) ? Convert.ToBoolean(PlayerPrefs.GetInt("TtsToggle")) : false);
 
+        this.descriptionsToggle.toggle.isOn = ((PlayerPrefs.HasKey("DescriptionsToggle")) ? Convert.ToBoolean(PlayerPrefs.GetInt("DescriptionsToggle")) : false);
+        this.highContrastToggle.toggle.isOn = ((PlayerPrefs.HasKey("HighContrastToggle")) ? Convert.ToBoolean(PlayerPrefs.GetInt("HighContrastToggle")) : false);
+        this.aimAssistToggle.toggle.isOn = ((PlayerPrefs.HasKey("AimAsisstToggle")) ? Convert.ToBoolean(PlayerPrefs.GetInt("AimAsisstToggle")) : false);
+        this.ttsToggle.toggle.isOn = ((PlayerPrefs.HasKey("TtsToggle")) ? Convert.ToBoolean(PlayerPrefs.GetInt("TtsToggle")) : false);
+
+        this.ToggleAimAssist(this.descriptionsToggle.toggle.isOn);
+        this.ToggleHighContrast(this.highContrastToggle.toggle.isOn);
+        this.ToggleAimAssist(this.aimAssistToggle.toggle.isOn);
+        this.ToggleTextToSpeech(this.ttsToggle.toggle.isOn);
 
         this.qualityDropdown.value = ((PlayerPrefs.HasKey("QualitySettingsPreference")) ? PlayerPrefs.GetInt("QualitySettingsPreference") : 3);
         this.resolutionDropdown.value = ((PlayerPrefs.HasKey("ResolutionPreference")) ? PlayerPrefs.GetInt("ResolutionPreference") : currentResolutionIndex);
-        this.textureDropdown.value = ((PlayerPrefs.HasKey("TextureQualityPreference")) ? PlayerPrefs.GetInt("TextureQualityPreference") : 0);
-        this.aaDropdown.value = ((PlayerPrefs.HasKey("AntiAliasingPreference")) ? PlayerPrefs.GetInt("AntiAliasingPreference") : 1);
         Screen.fullScreen = ((PlayerPrefs.HasKey("FullscreenPreference")) ? Convert.ToBoolean(PlayerPrefs.GetInt("FullscreenPreference")) : true);
     }
 
     public void ExitSettings()
     {
+        this.SaveSettings();
         if (TitleUiManager.Instance != null)
         {
-
+            TitleUiManager.Instance.SetActive(true);
+            base.SetActive(false);
             return;
-        } 
+        }
+        if (PauseUiManager.Instance != null)
+        {
+            PauseUiManager.Instance.SetActive(true);
+            base.SetActive(false);
+            return;
+        }
     }
-
-
-
 }

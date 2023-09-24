@@ -42,6 +42,9 @@ public class TitleUiManager : UiManager
     private void StartGame()
     {
         SceneLoader.Instance.LoadScene(1);
+        this.startButton.enabled = false;
+        this.settingsButton.enabled = false;
+        this.exitButton.enabled = false;
     }
 
     private void OpenSettings()

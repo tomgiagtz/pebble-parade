@@ -4,7 +4,6 @@ using UnityEditor;
 [CustomEditor(typeof(DescriptionObject))]
 public class DescriptionObjectEditor : Editor
 {
-    
     public override void OnInspectorGUI()
     {
         DescriptionObject obj = (DescriptionObject)target;
