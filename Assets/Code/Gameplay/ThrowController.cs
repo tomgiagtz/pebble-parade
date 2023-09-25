@@ -48,7 +48,7 @@ public class ThrowController : MonoBehaviour
             }
 
             //IF AIM ASSIST ACTIVE USE AAPOINTS
-            if(SettingsUiManager.Instance.AimAssistEnabled)
+            if(SettingsUiManager.Instance != null && SettingsUiManager.Instance.AimAssistEnabled)
             {
                 Transform aaPoint = GetClosestAimAssistPoint(aimPoint);
                 if (aaPoint != null)

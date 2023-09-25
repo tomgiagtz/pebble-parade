@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 183161649958298112}
   - component: {fileID: 1018933407072530660}
+  - component: {fileID: 3719564618243494197}
   - component: {fileID: 6147315610772677489}
   - component: {fileID: 8590592650855658898}
   - component: {fileID: 7783684244003643214}
@@ -71,6 +72,28 @@ MonoBehaviour:
     showPrevContactPoint: 0
     showContactNormals: 0
     showInputVector: 0
+--- !u!114 &3719564618243494197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5890903234979920523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5e4b50e484f2ac4ebc4afdf600cc75a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  aimProjection: {fileID: 0}
+  previewLine: {fileID: 0}
+  hitLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  playerOffset: 3
+  maxAimDistance: 50
+  previewSubdivisions: 2
+  vertexHeight: 2
+  aimAssistThreshold: 0.5
 --- !u!23 &6147315610772677489
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -161,7 +184,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Actions: {fileID: -944628639613478452, guid: 039e33412e753884896f1ba990600aff, type: 3}
-  m_NotificationBehavior: 0
+  m_NotificationBehavior: 2
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
     m_PersistentCalls:
@@ -172,7 +195,99 @@ MonoBehaviour:
   m_ControlsChangedEvent:
     m_PersistentCalls:
       m_Calls: []
-  m_ActionEvents: []
+  m_ActionEvents:
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1018933407072530660}
+        m_TargetAssemblyTypeName: PebbleController, Assembly-CSharp
+        m_MethodName: OnMove
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: e4abb70c-de0c-4062-abba-7fc139f06299
+    m_ActionName: Gameplay/Move[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d,/XInputControllerWindows/leftStick/up,/XInputControllerWindows/leftStick/down,/XInputControllerWindows/leftStick/left,/XInputControllerWindows/leftStick/right,/Keyboard/upArrow,/Keyboard/downArrow,/Keyboard/leftArrow,/Keyboard/rightArrow]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: c27de052-1b80-48f5-a575-951d0bc8a9db
+    m_ActionName: Gameplay/Interact[/Keyboard/e,/Keyboard/space,/Keyboard/enter,/XInputControllerWindows/buttonSouth]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: dcafdbe7-0f01-450f-ba6d-9d7a020b0a9a
+    m_ActionName: Gameplay/DescriptionOverlay[/XInputControllerWindows/buttonNorth,/Keyboard/shift]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 677bc309-63de-47aa-93f0-b3a40e6a5a63
+    m_ActionName: Gameplay/Description Start[/Keyboard/e,/XInputControllerWindows/buttonSouth,/Keyboard/space,/Keyboard/enter]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 58d7755f-df2d-48b5-873e-30cd7492dfe6
+    m_ActionName: Gameplay/Description Stop[/Keyboard/e,/XInputControllerWindows/buttonSouth,/Keyboard/space,/Keyboard/enter]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: e89a6a8e-66e8-436a-9c77-0b2dfb4236d4
+    m_ActionName: Gameplay/Toggle Menu[/XInputControllerWindows/select,/Keyboard/escape]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 3719564618243494197}
+        m_TargetAssemblyTypeName: ThrowController, Assembly-CSharp
+        m_MethodName: OnToggleAim
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: d64da845-4ead-4efc-bb72-eaada1e838f1
+    m_ActionName: Gameplay/Toggle Aim[/Mouse/rightButton,/XInputControllerWindows/rightShoulder]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 3719564618243494197}
+        m_TargetAssemblyTypeName: ThrowController, Assembly-CSharp
+        m_MethodName: OnThrow
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 3a143d77-aba6-4b0f-a6d8-0f180bce80c0
+    m_ActionName: Gameplay/Throw[/Mouse/leftButton,/XInputControllerWindows/leftShoulder]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: a43a3bf2-d1a9-4969-b96e-2a2d4a973873
+    m_ActionName: menu/next[/Keyboard/tab,/Keyboard/downArrow,/Keyboard/s,/XInputControllerWindows/dpad/down]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: a5019df2-9ee2-425a-92a5-30ed05b0749a
+    m_ActionName: menu/previous[/Keyboard/upArrow,/Keyboard/shift,/Keyboard/tab,/Keyboard/w]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 53315d43-e4ef-4b1d-9d07-b851271ee16c
+    m_ActionName: menu/Select[/Keyboard/e,/Keyboard/space,/Keyboard/enter,/XInputControllerWindows/buttonSouth]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 5cfb7aec-c48b-41f1-87f4-ac97285ab5c9
+    m_ActionName: menu/Toggle Menu[/XInputControllerWindows/select,/Keyboard/escape]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: bc458e3e-0c66-4271-86d0-7759f0708213
+    m_ActionName: menu/Any[/Keyboard/anyKey,/XInputControllerWindows/start,/XInputControllerWindows/select,/XInputControllerWindows/dpad/down,/XInputControllerWindows/dpad/up,/XInputControllerWindows/dpad/left,/XInputControllerWindows/dpad/right,/XInputControllerWindows/leftStickPress,/XInputControllerWindows/buttonSouth,/XInputControllerWindows/buttonWest,/XInputControllerWindows/buttonNorth,/XInputControllerWindows/buttonEast,/XInputControllerWindows/rightStickPress,/XInputControllerWindows/leftTrigger,/XInputControllerWindows/rightTrigger,/XInputControllerWindows/leftShoulder,/XInputControllerWindows/rightShoulder]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: a6f7b333-9724-4bd6-ba28-0af9d894178a
+    m_ActionName: menu/Quit[/Keyboard/q,/Keyboard/ctrl]
   m_NeverAutoSwitchControlSchemes: 1
   m_DefaultControlScheme: 
   m_DefaultActionMap: Gameplay
